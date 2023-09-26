@@ -3,26 +3,30 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\Auth\LoginService;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
+
+    public function __construct(
+        private LoginService $service
+    )
+    {
+    }
+
     /**
      * Handle the incoming request.
      */
     public function __invoke(Request $request)
     {
-        $email = $request->get('email');
-        $password = $request->get('password');
-
-        if (!auth()->attempt(['email' => $email, 'password' => $password])) {
-            throw new \Exception('It is not possible authenticate here!');
-        }
-
-        $token = $request->user()->createToken('access_token');
+       $token = $this->service->execute(
+           email: $request->email,
+           password: $request->password
+       );
 
         return response()->json([
-            'access_token' => $token->plainTextToken,
+            'access_token' => $token,
             // 'expires_at' => now()->addHours(2),
         ]);
     }
